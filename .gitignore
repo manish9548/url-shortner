@@ -1,0 +1,15 @@
+# Java / Spring Boot
+Backend/target/
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# React / Node
+Frontend/node_modules/
+Frontend/dist/
+
+# Environment / secrets
+.env
