@@ -1,6 +1,6 @@
 package url_shortener.project.serviceImpl;
 
-import lombok.Data;
+
 import org.springframework.stereotype.Service;
 import url_shortener.project.entity.UrlEntity;
 import url_shortener.project.exception.UrlNotFoundException;
@@ -8,7 +8,8 @@ import url_shortener.project.repository.UrlRepository;
 import url_shortener.project.service.UrlService;
 
 import java.util.Optional;
-import java.util.UUID;
+import java.util.Random;
+
 
 @Service
 public class UrlServiceImpl implements UrlService {
@@ -19,8 +20,14 @@ public class UrlServiceImpl implements UrlService {
 
     @Override
     public String shortenUrl(String originalUrl) {
-        String shortCode= UUID.randomUUID().toString();
-        UrlEntity urlEntity=new UrlEntity();
+
+
+        String shortCode = generateShortCode();
+
+        while (urlRepository.existsByShortCode(shortCode)) {
+            shortCode = generateShortCode();
+        }
+        UrlEntity urlEntity = new UrlEntity();
         urlEntity.setOriginalUrl(originalUrl);
         urlEntity.setShortCode(shortCode);
         urlRepository.save(urlEntity);
@@ -37,4 +44,19 @@ public class UrlServiceImpl implements UrlService {
         String originalUrl=entity.getOriginalUrl();
         return originalUrl;
     }
+
+    private String generateShortCode(){
+
+        String pool = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random random= new Random();
+        StringBuilder shortCode = new StringBuilder();
+        for(int i=0;i<6;i++){
+            int index= random.nextInt(pool.length());
+            shortCode.append(pool.charAt(index));
+
+        }
+        return shortCode.toString();
+    }
+
+
 }
