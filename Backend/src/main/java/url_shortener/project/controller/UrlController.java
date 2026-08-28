@@ -6,8 +6,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.service.annotation.GetExchange;
 import url_shortener.project.dto.UrlRequest;
+import url_shortener.project.dto.UrlResponse;
 import url_shortener.project.service.UrlService;
 
 import java.net.URI;
@@ -21,11 +21,11 @@ public class UrlController {
 
 
     @PostMapping("/api/shorten")
-    public String SendOriginalUrl(@RequestBody UrlRequest request) {
+    public UrlResponse SendOriginalUrl(@RequestBody UrlRequest request) {
 
-        String shortCode = urlService.shortenUrl(request.getOriginalUrl());
+      UrlResponse   response = urlService.shortenUrl(request.getOriginalUrl());
 
-        return shortCode;
+        return response;
     }
     @GetMapping("/{shortCode}")
     public ResponseEntity<Void> getOriginalUrl(@PathVariable String shortCode) {

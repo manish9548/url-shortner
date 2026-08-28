@@ -1,10 +1,10 @@
 package url_shortener.project.service;
 
 
+import url_shortener.project.dto.UrlResponse;
 
-
-public interface UrlService {
+public  interface UrlService {
     //ReturnType methodName(ParameterType parameterName)
-   String shortenUrl(String originalUrl);
+   UrlResponse shortenUrl(String originalUrl);
    String  getOriginal(String shortCode);
 }

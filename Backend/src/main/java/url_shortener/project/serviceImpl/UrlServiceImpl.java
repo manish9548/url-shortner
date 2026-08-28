@@ -2,6 +2,7 @@ package url_shortener.project.serviceImpl;
 
 
 import org.springframework.stereotype.Service;
+import url_shortener.project.dto.UrlResponse;
 import url_shortener.project.entity.UrlEntity;
 import url_shortener.project.exception.UrlNotFoundException;
 import url_shortener.project.repository.UrlRepository;
@@ -19,19 +20,28 @@ public class UrlServiceImpl implements UrlService {
     }
 
     @Override
-    public String shortenUrl(String originalUrl) {
-
+    public UrlResponse shortenUrl(String originalUrl) {
 
         String shortCode = generateShortCode();
 
         while (urlRepository.existsByShortCode(shortCode)) {
             shortCode = generateShortCode();
         }
+
         UrlEntity urlEntity = new UrlEntity();
+
         urlEntity.setOriginalUrl(originalUrl);
         urlEntity.setShortCode(shortCode);
+
         urlRepository.save(urlEntity);
-        return shortCode;
+
+        UrlResponse response = new UrlResponse();
+
+        response.setShortCode(shortCode);
+        response.setOriginalUrl(originalUrl);
+        response.setShortUrl("http://localhost:8080/" + shortCode);
+
+        return response;
     }
 
     @Override
