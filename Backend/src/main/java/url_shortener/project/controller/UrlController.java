@@ -1,5 +1,6 @@
 package url_shortener.project.controller;
 
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpHeaders;
@@ -21,7 +22,7 @@ public class UrlController {
 
 
     @PostMapping("/api/shorten")
-    public UrlResponse SendOriginalUrl(@RequestBody UrlRequest request) {
+    public UrlResponse SendOriginalUrl(@Valid @RequestBody UrlRequest request) {
 
       UrlResponse   response = urlService.shortenUrl(request.getOriginalUrl());
 
