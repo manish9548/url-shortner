@@ -13,5 +13,13 @@ public class GlobalExceptionHandler {
                 exception.getMessage()
         );
     }
+    @ExceptionHandler(UrlExpiredException.class)
+    public ErrorResponse handleUrlExpired(UrlExpiredException exception) {
+
+        return new ErrorResponse(
+                HttpStatus.GONE.value(),
+                exception.getMessage()
+        );
+    }
 
 }

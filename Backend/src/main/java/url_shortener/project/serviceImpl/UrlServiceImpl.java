@@ -4,6 +4,7 @@ package url_shortener.project.serviceImpl;
 import org.springframework.stereotype.Service;
 import url_shortener.project.dto.UrlResponse;
 import url_shortener.project.entity.UrlEntity;
+import url_shortener.project.exception.UrlExpiredException;
 import url_shortener.project.exception.UrlNotFoundException;
 import url_shortener.project.repository.UrlRepository;
 import url_shortener.project.service.UrlService;
@@ -49,13 +50,20 @@ public class UrlServiceImpl implements UrlService {
 
     @Override
     public String getOriginal(String shortCode) {
-        Optional<UrlEntity> urlEntity=urlRepository.findByShortCode(shortCode);
-        UrlEntity entity=urlEntity.orElseThrow(
-                ()-> new UrlNotFoundException("Url not found for :"+ shortCode)
+
+        Optional<UrlEntity> urlEntity = urlRepository.findByShortCode(shortCode);
+
+        UrlEntity entity = urlEntity.orElseThrow(
+                () -> new UrlNotFoundException("Url not found for: " + shortCode)
         );
 
-        String originalUrl=entity.getOriginalUrl();
-        return originalUrl;
+        if (entity.getExpireAt() != null &&
+                LocalDateTime.now().isAfter(entity.getExpireAt())) {
+
+            throw new UrlExpiredException("URL has expired");
+        }
+
+        return entity.getOriginalUrl();
     }
 
     private String generateShortCode(){
