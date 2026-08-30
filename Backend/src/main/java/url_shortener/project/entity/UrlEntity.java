@@ -3,15 +3,19 @@ package url_shortener.project.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 public class UrlEntity {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
-    Long id;
+    private Long id;
     @Column(nullable = false)
-    String originalUrl;
+ private    String originalUrl;
 
     @Column(unique = true, nullable = false)
-    String shortCode;
+  private   String shortCode;
+
+   private LocalDateTime expireAt;
 }

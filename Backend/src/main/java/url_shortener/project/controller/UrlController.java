@@ -24,7 +24,8 @@ public class UrlController {
     @PostMapping("/api/shorten")
     public UrlResponse SendOriginalUrl(@Valid @RequestBody UrlRequest request) {
 
-      UrlResponse   response = urlService.shortenUrl(request.getOriginalUrl());
+      UrlResponse   response = urlService.shortenUrl(request.getOriginalUrl(),
+              request.getExpireAt());
 
         return response;
     }

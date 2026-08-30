@@ -8,6 +8,7 @@ import url_shortener.project.exception.UrlNotFoundException;
 import url_shortener.project.repository.UrlRepository;
 import url_shortener.project.service.UrlService;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
 
@@ -20,7 +21,7 @@ public class UrlServiceImpl implements UrlService {
     }
 
     @Override
-    public UrlResponse shortenUrl(String originalUrl) {
+    public UrlResponse shortenUrl(String originalUrl , LocalDateTime expiresAt) {
 
         String shortCode = generateShortCode();
 
@@ -30,8 +31,10 @@ public class UrlServiceImpl implements UrlService {
 
         UrlEntity urlEntity = new UrlEntity();
 
+
         urlEntity.setOriginalUrl(originalUrl);
         urlEntity.setShortCode(shortCode);
+        urlEntity.setExpireAt(expiresAt);
 
         urlRepository.save(urlEntity);
 

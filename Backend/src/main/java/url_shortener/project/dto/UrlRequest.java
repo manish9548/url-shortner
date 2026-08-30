@@ -3,6 +3,7 @@ package url_shortener.project.dto;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import jakarta.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
 
 @Data
 public class UrlRequest {
@@ -12,4 +13,5 @@ public class UrlRequest {
             message = "Invalid URL. URL must start with http:// or https://"
     )
     private String originalUrl;
+    private LocalDateTime expireAt;
 }
