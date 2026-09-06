@@ -63,6 +63,10 @@ public class UrlServiceImpl implements UrlService {
             throw new UrlExpiredException("URL has expired");
         }
 
+        entity.setClickCount(entity.getClickCount() + 1);
+        entity.setLastAccessedAt(LocalDateTime.now());
+
+        urlRepository.save(entity);
         return entity.getOriginalUrl();
     }
 

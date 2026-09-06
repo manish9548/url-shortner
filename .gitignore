@@ -9,7 +9,7 @@ Backend/target/
 
 # React / Node
 Frontend/node_modules/
-Frontend/dist/
+Frontend/dist/ 
 
 # Environment / secrets
 .env

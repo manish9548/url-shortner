@@ -18,4 +18,6 @@ public class UrlEntity {
   private   String shortCode;
 
    private LocalDateTime expireAt;
+   private  Long clickCount =0L;
+   private LocalDateTime lastAccessedAt;
 }
