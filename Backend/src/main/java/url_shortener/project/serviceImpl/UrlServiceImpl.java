@@ -6,6 +6,7 @@ import url_shortener.project.dto.UrlResponse;
 import url_shortener.project.entity.UrlEntity;
 import url_shortener.project.exception.UrlExpiredException;
 import url_shortener.project.exception.UrlNotFoundException;
+import url_shortener.project.exception.AliasAlreadyTakenException;
 import url_shortener.project.repository.UrlRepository;
 import url_shortener.project.service.UrlService;
 
@@ -22,13 +23,23 @@ public class UrlServiceImpl implements UrlService {
     }
 
     @Override
-    public UrlResponse shortenUrl(String originalUrl , LocalDateTime expiresAt) {
+    public UrlResponse shortenUrl(String originalUrl , LocalDateTime expiresAt,String customAlias) {
 
-        String shortCode = generateShortCode();
+        String shortCode ;
+        if(customAlias!=null && !customAlias.isBlank()){
+            if(urlRepository.existsByShortCode(customAlias)){
+                throw new AliasAlreadyTakenException("alias already taken choose another name: ");
 
-        while (urlRepository.existsByShortCode(shortCode)) {
-            shortCode = generateShortCode();
+            }
+            shortCode=customAlias;
+        }else{
+            shortCode=generateShortCode();
+            while (urlRepository.existsByShortCode(shortCode)){
+                shortCode=generateShortCode();
+            }
         }
+
+
 
         UrlEntity urlEntity = new UrlEntity();
 

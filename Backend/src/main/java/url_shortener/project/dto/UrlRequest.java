@@ -14,4 +14,5 @@ public class UrlRequest {
     )
     private String originalUrl;
     private LocalDateTime expireAt;
+    private String customAlias;
 }

@@ -21,5 +21,12 @@ public class GlobalExceptionHandler {
                 exception.getMessage()
         );
     }
+    @ExceptionHandler(AliasAlreadyTakenException.class)
+    public ErrorResponse handleAliasAlreadyTaken(AliasAlreadyTakenException exception){
+        return  new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                exception.getMessage()
+        );
+    }
 
 }

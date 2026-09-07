@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 public  interface UrlService {
     //ReturnType methodName(ParameterType parameterName)
-    UrlResponse shortenUrl(String originalUrl, LocalDateTime expiresAt);
+    UrlResponse shortenUrl(String originalUrl, LocalDateTime expiresAt,String customAlias);
    String  getOriginal(String shortCode);
+
 }
