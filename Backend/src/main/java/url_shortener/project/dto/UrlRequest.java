@@ -14,5 +14,9 @@ public class UrlRequest {
     )
     private String originalUrl;
     private LocalDateTime expireAt;
+    @Pattern(
+            regexp = "^[a-zA-Z0-9-_]+$",
+            message = "Alias can contain only letters,numbers,hyphen and underscore"
+    )
     private String customAlias;
 }

@@ -1,6 +1,7 @@
 package url_shortener.project.exception;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -27,6 +28,17 @@ public class GlobalExceptionHandler {
                 HttpStatus.CONFLICT.value(),
                 exception.getMessage()
         );
+    }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public  ErrorResponse handleValidationException(MethodArgumentNotValidException exception){
+        String message =exception.getBindingResult()
+                .getFieldError()
+                .getDefaultMessage();
+        return new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                message
+        );
+
     }
 
 }
