@@ -1,15 +1,19 @@
 package url_shortener.project.serviceImpl;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import url_shortener.project.dto.UrlRequest;
 import url_shortener.project.dto.UrlResponse;
 import url_shortener.project.entity.UrlEntity;
+import url_shortener.project.entity.UserEntity;
 import url_shortener.project.exception.UrlExpiredException;
 import url_shortener.project.exception.UrlNotFoundException;
 import url_shortener.project.exception.AliasAlreadyTakenException;
 import url_shortener.project.repository.UrlRepository;
+import url_shortener.project.repository.UserRepository;
 import url_shortener.project.service.UrlService;
 
 import java.time.Duration;
@@ -22,33 +26,50 @@ public class UrlServiceImpl implements UrlService {
 
     private final UrlRepository urlRepository;
     private final StringRedisTemplate redisTemplate;
-    private final HttpServletRequest request;
+    private final HttpServletRequest httpRequest; // Renamed to avoid confusion with UrlRequest
 
-    public UrlServiceImpl(UrlRepository urlRepository, StringRedisTemplate redisTemplate, HttpServletRequest request) {
+    @Autowired
+    private UserRepository userRepository;
+
+    public UrlServiceImpl(UrlRepository urlRepository, StringRedisTemplate redisTemplate, HttpServletRequest httpRequest) {
         this.urlRepository = urlRepository;
         this.redisTemplate = redisTemplate;
-        this.request = request;
+        this.httpRequest = httpRequest;
     }
 
     @Override
-    public UrlResponse shortenUrl(String originalUrl, LocalDateTime expiresAt, String customAlias) {
+    public UrlResponse createShortUrl(UrlRequest urlRequest, String userEmail) {
 
-        // --- RATE LIMITING LOGIC (Guest User: Max 2 URLs) ---
-        String clientIp = getClientIp(request);
+        // --- 1. RATE LIMITING LOGIC (Only for Guest Users) ---
+        boolean isGuest = (userEmail == null || userEmail.isBlank());
+        String clientIp = getClientIp(httpRequest);
         String rateKey = "rate:guest:" + clientIp;
+        String countStr = null;
 
-        String countStr = redisTemplate.opsForValue().get(rateKey);
-        int currentCount = countStr != null ? Integer.parseInt(countStr) : 0;
+        if (isGuest) {
+            countStr = redisTemplate.opsForValue().get(rateKey);
+            int currentCount = countStr != null ? Integer.parseInt(countStr) : 0;
 
-        if (currentCount >= 2) {
-            throw new RuntimeException("Guest limit reached (Max 2 URLs). Please login to continue.");
+            if (currentCount >= 2) {
+                throw new RuntimeException("Guest limit reached (Max 2 URLs). Please login to continue.");
+            }
         }
         // ----------------------------------------------------
 
+        // --- 2. FIND USER IF LOGGED IN ---
+        UserEntity user = null;
+        if (!isGuest) {
+            user = userRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+        }
+
+        // --- 3. SHORT CODE & ALIAS LOGIC ---
         String shortCode;
+        String customAlias = urlRequest.getCustomAlias();
+
         if (customAlias != null && !customAlias.isBlank()) {
             if (urlRepository.existsByShortCode(customAlias)) {
-                throw new AliasAlreadyTakenException("alias already taken choose another name: ");
+                throw new AliasAlreadyTakenException("Alias already taken, choose another name.");
             }
             shortCode = customAlias;
         } else {
@@ -58,25 +79,40 @@ public class UrlServiceImpl implements UrlService {
             }
         }
 
+        // --- 4. SAVE URL ENTITY ---
         UrlEntity urlEntity = new UrlEntity();
-        urlEntity.setOriginalUrl(originalUrl);
+        urlEntity.setOriginalUrl(urlRequest.getOriginalUrl());
         urlEntity.setShortCode(shortCode);
-        urlEntity.setExpireAt(expiresAt);
+        urlEntity.setExpireAt(urlRequest.getExpireAt());
+        urlEntity.setUser(user); // Mapping logged-in user here!
 
         urlRepository.save(urlEntity);
 
-        // Increment count and set 24-hour expiration on Redis key if success
-        redisTemplate.opsForValue().increment(rateKey);
-        if (countStr == null) {
-            redisTemplate.expire(rateKey, Duration.ofHours(24));
+        // --- 5. UPDATE REDIS RATE LIMIT FOR GUESTS ---
+        if (isGuest) {
+            redisTemplate.opsForValue().increment(rateKey);
+            if (countStr == null) {
+                redisTemplate.expire(rateKey, Duration.ofHours(24));
+            }
         }
 
+        // --- 6. BUILD RESPONSE ---
         UrlResponse response = new UrlResponse();
         response.setShortCode(shortCode);
-        response.setOriginalUrl(originalUrl);
+        response.setOriginalUrl(urlRequest.getOriginalUrl());
         response.setShortUrl("http://localhost:8080/" + shortCode);
 
         return response;
+    }
+
+    // Keeping backward compatibility if old shortenUrl method was used elsewhere
+    @Override
+    public UrlResponse shortenUrl(String originalUrl, LocalDateTime expiresAt, String customAlias) {
+        UrlRequest requestDto = new UrlRequest();
+        requestDto.setOriginalUrl(originalUrl);
+        requestDto.setExpireAt(expiresAt);
+        requestDto.setCustomAlias(customAlias);
+        return createShortUrl(requestDto, null); // Treated as guest
     }
 
     @Override

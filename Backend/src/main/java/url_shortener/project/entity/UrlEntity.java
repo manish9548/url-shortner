@@ -20,4 +20,8 @@ public class UrlEntity {
    private LocalDateTime expireAt;
    private  Long clickCount =0L;
    private LocalDateTime lastAccessedAt;
+
+   @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name ="user_id")
+    private UserEntity user;
 }
