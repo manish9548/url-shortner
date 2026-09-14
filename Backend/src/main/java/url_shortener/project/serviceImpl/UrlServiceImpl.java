@@ -18,6 +18,7 @@ import url_shortener.project.service.UrlService;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
@@ -153,5 +154,17 @@ public class UrlServiceImpl implements UrlService {
             return xForwardedFor.split(",")[0];
         }
         return request.getRemoteAddr();
+    }
+    public List<UrlResponse> getUrlsByUser(String userEmail) {
+        UserEntity user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return urlRepository.findByUser(user).stream().map(url -> {
+            UrlResponse response = new UrlResponse();
+            response.setShortCode(url.getShortCode());
+            response.setOriginalUrl(url.getOriginalUrl());
+            response.setShortUrl("http://localhost:8080/" + url.getShortCode());
+            return response;
+        }).toList();
     }
 }
