@@ -42,7 +42,8 @@ public class UrlServiceImpl implements UrlService {
     public UrlResponse createShortUrl(UrlRequest urlRequest, String userEmail) {
 
         // --- 1. RATE LIMITING LOGIC (Only for Guest Users) ---
-        boolean isGuest = (userEmail == null || userEmail.isBlank());
+        // Check karo ki email null hai, blank hai, ya Spring ka "anonymousUser" hai
+        boolean isGuest = (userEmail == null || userEmail.isBlank() || userEmail.equals("anonymousUser"));
         String clientIp = getClientIp(httpRequest);
         String rateKey = "rate:guest:" + clientIp;
         String countStr = null;
