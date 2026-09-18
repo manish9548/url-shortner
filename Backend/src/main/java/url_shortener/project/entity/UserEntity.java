@@ -20,4 +20,6 @@ public class UserEntity {
     private String name;
 
     private String provider;
+
+    private String password;
 }
